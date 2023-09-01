@@ -6,22 +6,14 @@ const figlet = require("figlet");
 const PORT = process.env.PORT || 3001;
 
 // adds a banner at the start
-figlet.text(
-    "EMPLOYEE \n TRACKER",
-    {
-        horizontalLayout: "fitted",
-        verticalLayout: "fitted",
-        whitespaceBreak: true,
-    },
-    function (err, data) {
-        if (err) {
-            console.log("Figlet could not load...");
-            console.dir(err);
-            return;
-        }
-        console.log(data);
-    }
-);
+console.log(
+    figlet.textSync("EMPLOYEE \n TRACKER", {
+      font: "standard",
+      horizontalLayout: "fitted",
+      verticalLayout: "fitted",
+      whitespaceBreak: true,
+    })
+  );
 
 // array of questions for user input
 inquirer
