@@ -1,9 +1,7 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
-const mysql = require('mysql2');
 const figlet = require("figlet");
 
-const PORT = process.env.PORT || 3001;
 
 // adds a banner at the start
 console.log(

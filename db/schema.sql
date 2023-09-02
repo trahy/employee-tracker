@@ -1,4 +1,7 @@
-DROP DATABASE IF EXISTS movies_db;
+DROP DATABASE IF EXISTS emplyee_db;
+DROP DATABASE IF EXISTS role_db;
+DROP DATABASE IF EXISTS department_db;
+
 CREATE DATABASE movies_db;
 
 USE movies_db;
