@@ -76,8 +76,7 @@ function prompts() {
         })
 };
 
-// functions to VIEW tables
-
+// views all departments of database
 function viewAllDepartments() {
     connection.query(
         `SELECT id, dept_name AS department FROM departments`,
@@ -88,6 +87,7 @@ function viewAllDepartments() {
         });
 };
 
+// views all roles from database
 function viewAllRoles() {
     connection.query(
         `SELECT roles.id, title, salary, department_id AS department FROM roles
@@ -100,6 +100,7 @@ function viewAllRoles() {
         });
 };
 
+// views all employees from database
 function viewAllEmployees() {
     connection.query(`SELECT * FROM employees`,
         (err, res) => {
@@ -109,8 +110,7 @@ function viewAllEmployees() {
         });
 };
 
-// functions to ADD to tables
-
+// functions to department to table
 function addDepartment() {
     inquirer.prompt({
         type: 'input',
@@ -126,6 +126,7 @@ function addDepartment() {
     });
 };
 
+// function to add role to table
 function addRole() {
     // fetches departments database
     connection.query(`SELECT * FROM departments`, (err, departments) => {
@@ -163,6 +164,7 @@ function addRole() {
     });
 };
 
+// function to add employee to table
 function addEmployee() {
     // fetches employees from database
     connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
@@ -206,7 +208,6 @@ function addEmployee() {
 };
 
 // function to UPDATE employee role
-
 function updateEmployeeRole() {
     // fetches employees from database
     connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
