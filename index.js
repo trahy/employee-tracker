@@ -2,7 +2,7 @@ const inquirer = require('inquirer');
 const connection = require('./config/connection.js');
 const figlet = require("figlet");
 
-// adds a banner at the start
+// adds banner at start of prompt
 console.log(
     figlet.textSync("EMPLOYEE \n TRACKER", {
         font: "standard",
@@ -76,10 +76,10 @@ function prompts() {
         })
 };
 
-// views all departments of database
+// --- views all departments of database ---
 function viewAllDepartments() {
     connection.query(
-        `SELECT id, dept_name AS department FROM departments`,
+        `SELECT id, dept_name AS department FROM departments;`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -87,12 +87,12 @@ function viewAllDepartments() {
         });
 };
 
-// views all roles from database
+// --- views all roles from database ---
 function viewAllRoles() {
     connection.query(
-        `SELECT roles.id, title, salary, department_id AS department FROM roles
+        `SELECT roles.id, roles.title, roles.salary, departments.dept_name AS department FROM roles
         INNER JOIN departments ON roles.department_id = departments.id
-        ORDER BY roles.id`,
+        ORDER BY roles.id;`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -100,9 +100,13 @@ function viewAllRoles() {
         });
 };
 
-// views all employees from database
+// --- views all employees from database ---
 function viewAllEmployees() {
-    connection.query(`SELECT * FROM employees`,
+    connection.query(`
+    SELECT employees.first_name, employees.last_name, roles.title AS job_title
+    INNER JOIN roles ON employees.role_id = roles.id
+    JOIN employees on employeed_manager_id = employees.id
+    WHERE employees.manager_id IS NOT NULL;`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -110,7 +114,7 @@ function viewAllEmployees() {
         });
 };
 
-// functions to department to table
+// --- functions to department to table ---
 function addDepartment() {
     inquirer.prompt({
         type: 'input',
@@ -126,14 +130,14 @@ function addDepartment() {
     });
 };
 
-// function to add role to table
+// --- function to add role to table ---
 function addRole() {
     // fetches departments database
-    connection.query(`SELECT * FROM departments`, (err, departments) => {
+    connection.query(`SELECT * FROM departments;`, (err, departments) => {
         if (err) throw err;
 
         // uses departments database to create choices
-        const deptChoices = departments.map(dept => ({ name: dept.name, value: dept.name }));
+        const deptChoices = departments.map(dept => ({ name: dept.dept_name, value: dept.id }));
         deptChoices.push({ name: 'None', value: null });
 
         inquirer.prompt([
@@ -164,10 +168,10 @@ function addRole() {
     });
 };
 
-// function to add employee to table
+// --- function to add employee to table ---
 function addEmployee() {
     // fetches employees from database
-    connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
+    connection.query(`SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees;`, (err, employees) => {
         if (err) throw err;
 
         // uses employee database to create choices
@@ -207,16 +211,16 @@ function addEmployee() {
     });
 };
 
-// function to UPDATE employee role
+// --- function to UPDATE employee role ---
 function updateEmployeeRole() {
     // fetches employees from database
-    connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
+    connection.query(`SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees;`, (err, employees) => {
         if (err) throw err;
 
         const employeeChoices = employees.map(emp => ({ name: emp.name, value: emp.id }));
 
         // fetches roles from database
-        connection.query('SELECT id, title FROM roles', (err, roles) => {
+        connection.query(`SELECT id, title FROM roles;`, (err, roles) => {
             if (err) throw err;
 
             const roleChoices = roles.map(role => ({ name: role.title, value: role.id }));
@@ -235,7 +239,7 @@ function updateEmployeeRole() {
                     choices: roleChoices,
                 }
             ]).then((response) => {
-                connection.query('UPDATE employees SET role_id = ? WHERE id = ?', [response.roleUpdate, response.employeeUpdate], (err, res) => {
+                connection.query(`UPDATE employees SET role_id = ? WHERE id = ?`, [response.roleUpdate, response.employeeUpdate], (err, res) => {
                     if (err) throw err;
                     console.log('Employee role updated');
                     prompts();
