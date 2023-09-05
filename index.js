@@ -59,9 +59,6 @@ function prompts() {
                 case 'Update employee role':
                     updateEmployeeRole();
                     break;
-                case 'Update employee manager':
-                    updateEmployeeManager();
-                    break;
                 case 'Delete department':
                     deleteDepartment();
                     break;
@@ -120,7 +117,7 @@ function addDepartment() {
         name: 'dept_name',
         message: 'Enter department name',
     }).then((response) => {
-        connection.query('INSERT INTO departments SET ?', { dept_name: response.dept_name },
+        connection.query(`INSERT INTO departments SET ?`, { dept_name: response.dept_name },
             (err, res) => {
                 if (err) throw err;
                 console.log('Department created');
@@ -130,10 +127,12 @@ function addDepartment() {
 };
 
 function addRole() {
+    // fetches departments database
     connection.query(`SELECT * FROM departments`, (err, departments) => {
         if (err) throw err;
 
-        const deptChoices = departments.map(dept => ({ name: dept.name, value: dept.id }));
+        // uses departments database to create choices
+        const deptChoices = departments.map(dept => ({ name: dept.name, value: dept.name }));
         deptChoices.push({ name: 'None', value: null });
 
         inquirer.prompt([
@@ -150,11 +149,11 @@ function addRole() {
             {
                 type: 'list',
                 name: 'department_id',
-                message: 'Enter department ID number',
+                message: 'Select department',
                 choices: deptChoices,
             },
         ]).then((response) => {
-            connection.query('INSERT INTO roles SET ?',
+            connection.query(`INSERT INTO roles SET ?`,
                 response, (err, res) => {
                     if (err) throw err;
                     console.log('New role added');
@@ -165,9 +164,11 @@ function addRole() {
 };
 
 function addEmployee() {
+    // fetches employees from database
     connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
         if (err) throw err;
 
+        // uses employee database to create choices
         const managerChoices = employees.map(emp => ({ name: emp.name, value: emp.id }));
         managerChoices.push({ name: 'None', value: null });
 
@@ -194,27 +195,53 @@ function addEmployee() {
                 choices: managerChoices,
             }
         ]).then((response) => {
-            confirmManagerID(response.role_id, () => {
-                if (response.manager_id !== null) {
-                    confirmManagerID(response.manager_id, () => {
-                        connection.query('INSERT INTO employees SET ?', response, (err, res) => {
-                            if (err) throw err;
-                            console.log('Employee added');
-                            prompts();
-                        });
-                    });
-                } else {
-                    connection.query('INSERT INTO employees SET ?', response, (err, res) => {
-                        if (err) throw err;
-                        console.log('Employee added');
-                        prompts();
-                    });
-                }
-            });
+            connection.query(`INSERT INTO roles SET ?`,
+                response, (err, res) => {
+                    if (err) throw err;
+                    console.log('Employee added');
+                    prompts();
+                });
         });
     });
 };
 
+// function to UPDATE employee role
 
+function updateEmployeeRole() {
+    // fetches employees from database
+    connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
+        if (err) throw err;
+
+        const employeeChoices = employees.map(emp => ({ name: emp.name, value: emp.id }));
+
+        // fetches roles from database
+        connection.query('SELECT id, title FROM roles', (err, roles) => {
+            if (err) throw err;
+
+            const roleChoices = roles.map(role => ({ name: role.title, value: role.id }));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'employeeUpdate',
+                    message: 'Select employee to update',
+                    choices: employeeChoices,
+                },
+                {
+                    type: 'list',
+                    name: 'roleUpdate',
+                    message: 'Select role to update',
+                    choices: roleChoices,
+                }
+            ]).then((response) => {
+                connection.query('UPDATE employees SET role_id = ? WHERE id = ?', [response.roleUpdate, response.employeeUpdate], (err, res) => {
+                    if (err) throw err;
+                    console.log('Employee role updated');
+                    prompts();
+                });
+            });
+        });
+    });
+};
 
 prompts();
