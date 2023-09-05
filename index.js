@@ -112,57 +112,15 @@ function viewAllEmployees() {
         });
 };
 
-// confirmation functions for ADD functions
-
-const confirmDepartmentId = function (departmentID, callback) {
-    const query = `SELECT * FROM departments WHERE id = ?`;
-    connection.query(query, [departmentID], (err, res) => {
-        if (err) throw err;
-        if (res.length === 0) {
-            console.log('Department ID is invalid. Please add department.');
-            prompts();
-        } else {
-            callback();
-        }
-    });
-};
-
-const cconfirmRoleId = (roleID, callback) => {
-    const query = `SELECT * FROM roles WHERE id = ?`;
-    connection.query(query, [roleID], (err, res) => {
-        if (err) throw err;
-        if (res.length === 0) {
-            console.log('Role ID is invalid. Please add role.');
-            prompts();
-        } else {
-            callback();
-        }
-    });
-};
-
-const confirmManagerID = (managerID, callback) => {
-    const query = `SELECT * FROM employees WHERE id = ?`;
-    connection.query(query, [managerID], (err, res) => {
-        if (err) throw err;
-        if (res.length === 0) {
-            console.log('Manger ID is invalid. Please ensure manager exists.');
-            prompts();
-        } else {
-            callback();
-        }
-    });
-};
-
-
 // functions to ADD to tables
 
 function addDepartment() {
     inquirer.prompt({
         type: 'input',
-        name: 'name',
+        name: 'dept_name',
         message: 'Enter department name',
     }).then((response) => {
-        connection.query('INSERT INTO departments SET ?', { name: response.dept_name },
+        connection.query('INSERT INTO departments SET ?', { dept_name: response.dept_name },
             (err, res) => {
                 if (err) throw err;
                 console.log('Department created');
@@ -172,11 +130,11 @@ function addDepartment() {
 };
 
 function addRole() {
-    connection.query('SELECT FROM departments', (err, departments) => {
+    connection.query(`SELECT * FROM departments`, (err, departments) => {
         if (err) throw err;
 
-        const departmentChoices = departments.map(dept => ({ name: dept.dept_name, value: dept.id }));
-        departmentChoices.push({ name: 'None', value: null });
+        const deptChoices = departments.map(dept => ({ name: dept.name, value: dept.id }));
+        deptChoices.push({ name: 'None', value: null });
 
         inquirer.prompt([
             {
@@ -190,19 +148,18 @@ function addRole() {
                 message: 'Enter salary of role',
             },
             {
-                type: 'input',
+                type: 'list',
                 name: 'department_id',
                 message: 'Enter department ID number',
-                choices: departmentChoices,
+                choices: deptChoices,
             },
         ]).then((response) => {
-            confirmDepartmentId(response.department_id, () => {
-                connection.query('INSERT INTO roles SET ?', response, (err, res) => {
+            connection.query('INSERT INTO roles SET ?',
+                response, (err, res) => {
                     if (err) throw err;
                     console.log('New role added');
-                    addRole();
+                    prompts();
                 });
-            });
         });
     });
 };
