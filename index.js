@@ -82,7 +82,8 @@ function prompts() {
 // functions to VIEW tables
 
 function viewAllDepartments() {
-    connection.query('SELECT * FROM departments',
+    connection.query(
+        `SELECT id, dept_name AS department FROM departments`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -91,7 +92,10 @@ function viewAllDepartments() {
 };
 
 function viewAllRoles() {
-    connection.query('SELECT * FROM roles',
+    connection.query(
+        `SELECT roles.id, title, salary, department_id AS department FROM roles
+        INNER JOIN departments ON roles.department_id = departments.id
+        ORDER BY roles.id`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -100,7 +104,7 @@ function viewAllRoles() {
 };
 
 function viewAllEmployees() {
-    connection.query('SELECT * FROM employees',
+    connection.query(`SELECT * FROM employees`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -111,7 +115,7 @@ function viewAllEmployees() {
 // confirmation functions for ADD functions
 
 const confirmDepartmentId = function (departmentID, callback) {
-    const query = 'SELECT * FROM department WHERE id = ?';
+    const query = `SELECT * FROM departments WHERE id = ?`;
     connection.query(query, [departmentID], (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -124,7 +128,7 @@ const confirmDepartmentId = function (departmentID, callback) {
 };
 
 const cconfirmRoleId = (roleID, callback) => {
-    const query = 'SELECT * FROM role WHERE id = ?';
+    const query = `SELECT * FROM roles WHERE id = ?`;
     connection.query(query, [roleID], (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -137,7 +141,7 @@ const cconfirmRoleId = (roleID, callback) => {
 };
 
 const confirmManagerID = (managerID, callback) => {
-    const query = 'SELECT * FROM employee WHERE id = ?';
+    const query = `SELECT * FROM employees WHERE id = ?`;
     connection.query(query, [managerID], (err, res) => {
         if (err) throw err;
         if (res.length === 0) {
@@ -158,7 +162,7 @@ function addDepartment() {
         name: 'name',
         message: 'Enter department name',
     }).then((response) => {
-        connection.query('INSERT INTO departments SET ?', { name: response.name },
+        connection.query('INSERT INTO departments SET ?', { name: response.dept_name },
             (err, res) => {
                 if (err) throw err;
                 console.log('Department created');
@@ -168,38 +172,46 @@ function addDepartment() {
 };
 
 function addRole() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'title',
-            message: 'Enter title of role',
-        },
-        {
-            type: 'input',
-            name: 'salary',
-            message: 'Enter salary of role',
-        },
-        {
-            type: 'input',
-            name: 'department_id',
-            message: 'Enter department ID number',
-        },
-    ]).then((response) => {
-        confirmDepartmentId(response.department_id, () => {
-            connection.query('INSERT INTO role SET ?', response, (err, res) => {
-                if (err) throw err;
-                console.log('New role added');
-                prompts();
+    connection.query('SELECT FROM departments', (err, departments) => {
+        if (err) throw err;
+
+        const departmentChoices = departments.map(dept => ({ name: dept.dept_name, value: dept.id }));
+        departmentChoices.push({ name: 'None', value: null });
+
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: 'Enter title of role',
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'Enter salary of role',
+            },
+            {
+                type: 'input',
+                name: 'department_id',
+                message: 'Enter department ID number',
+                choices: departmentChoices,
+            },
+        ]).then((response) => {
+            confirmDepartmentId(response.department_id, () => {
+                connection.query('INSERT INTO roles SET ?', response, (err, res) => {
+                    if (err) throw err;
+                    console.log('New role added');
+                    addRole();
+                });
             });
         });
     });
 };
 
 function addEmployee() {
-    connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee', (err, employees) => {
+    connection.query('SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees', (err, employees) => {
         if (err) throw err;
 
-        const managerChoices = employees.map(employee => ({ name: employee.name, value: employee.id }));
+        const managerChoices = employees.map(emp => ({ name: emp.name, value: emp.id }));
         managerChoices.push({ name: 'None', value: null });
 
         inquirer.prompt([
@@ -224,18 +236,18 @@ function addEmployee() {
                 message: 'Enter manager for employee',
                 choices: managerChoices,
             }
-        ]).then((answer) => {
-            confirmManagerID(answer.role_id, () => {
+        ]).then((response) => {
+            confirmManagerID(response.role_id, () => {
                 if (response.manager_id !== null) {
                     confirmManagerID(response.manager_id, () => {
-                        connection.query('INSERT INTO employee SET ?', response, (err, res) => {
+                        connection.query('INSERT INTO employees SET ?', response, (err, res) => {
                             if (err) throw err;
                             console.log('Employee added');
                             prompts();
                         });
                     });
                 } else {
-                    connection.query('INSERT INTO employee SET ?', response, (err, res) => {
+                    connection.query('INSERT INTO employees SET ?', response, (err, res) => {
                         if (err) throw err;
                         console.log('Employee added');
                         prompts();
