@@ -82,7 +82,7 @@ function prompts() {
 // --- views all departments of database ---
 function viewAllDepartments() {
     connection.query(
-        `SELECT id, dept_name AS department FROM departments;`,
+        `SELECT dept_name AS department FROM departments;`,
         (err, res) => {
             if (err) throw err;
             console.table(res);
@@ -93,7 +93,7 @@ function viewAllDepartments() {
 // --- views all roles from database ---
 function viewAllRoles() {
     connection.query(
-        `SELECT roles.id, roles.title, roles.salary, departments.dept_name AS department FROM roles
+        `SELECT roles.title, roles.salary, departments.dept_name AS department FROM roles
         INNER JOIN departments ON roles.department_id = departments.id
         ORDER BY roles.id;`,
         (err, res) => {
