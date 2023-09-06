@@ -215,7 +215,7 @@ function addEmployee() {
                     choices: managerChoices,
                 }
             ]).then((response) => {
-                connection.query(`INSERT INTO roles SET ?`,
+                connection.query(`INSERT INTO employees SET ?`,
                     response, (err, res) => {
                         if (err) throw err;
                         console.log('Employee added');
