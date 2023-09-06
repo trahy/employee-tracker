@@ -1,13 +1,16 @@
-# w12-employee-tracker
+# employee-tracker
 
 ## Description
-this is a sample readme file
+
+This is an interactive application which tracks the departments, roles and employees of a company through commands.
+
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Credits](#credits)
+- [Screenshot](#screenshot)
+- [Walkthrough Video](#walkthrough-video)
 - [License](#license)
 
 
@@ -29,9 +32,14 @@ this is a sample readme file
 3. User is able to view, add, update or delete selected departments, roles and employees.
 
 
+## Screenshot
+
 This is what the application looks like when invoked.
 
 ![screenshot of sample readme file](assets/screenshot.png)
+
+
+## Walkthrough-Video
 
 To see how this application works, follow the [Walkthrough Video](https://drive.google.com/file/d/1GKzSJvRNhp443to077GPvU8CM3iGZWO1/view?usp=drive_link).
 
